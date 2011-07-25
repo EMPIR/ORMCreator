@@ -1,4 +1,5 @@
 Contact
+ContactTableAdapter
  SELECT C.[CONTACTID] s
       ,C.[TYPE] s
       ,C.[ACCOUNTID] s

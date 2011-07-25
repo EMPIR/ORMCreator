@@ -34,6 +34,8 @@ namespace ORMDriver
 
             DBTable dbTable = new DBTable();
             dbTable.LoadFile("ContactData.txt");
+            dbTable.Save("SavedData.cs");
+
         }
     }
 }

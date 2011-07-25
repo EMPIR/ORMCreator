@@ -1,7 +1,0 @@
-C:\Users\Administrator\Build\PrimeForLife\ORMCreator\ORMDriver\bin\Debug\ORMDriver.exe
-C:\Users\Administrator\Build\PrimeForLife\ORMCreator\ORMDriver\bin\Debug\ORMDriver.pdb
-C:\Users\Administrator\Build\PrimeForLife\ORMCreator\ORMDriver\bin\Debug\ORMCreator.dll
-C:\Users\Administrator\Build\PrimeForLife\ORMCreator\ORMDriver\bin\Debug\ORMCreator.pdb
-C:\Users\Administrator\Build\PrimeForLife\ORMCreator\ORMDriver\obj\x86\Debug\ResolveAssemblyReference.cache
-C:\Users\Administrator\Build\PrimeForLife\ORMCreator\ORMDriver\obj\x86\Debug\ORMDriver.exe
-C:\Users\Administrator\Build\PrimeForLife\ORMCreator\ORMDriver\obj\x86\Debug\ORMDriver.pdb

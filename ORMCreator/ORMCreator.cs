@@ -36,6 +36,7 @@ namespace ORMCreator
         }
         string ParseFieldName(string strInput)
         {
+            strInput = strInput.Trim();
             char[] delimiterChars = { ' ', ',', '.', ':', '\t' };
             char[] removeChars = { '[', ']' };
             string ret;
@@ -57,7 +58,7 @@ namespace ORMCreator
                 FieldType = (int)Type.Integer;
                 return;
             }
-            if (strInput.ToLower() == "datetime")
+            if (strInput.ToLower() == "datetime" || strInput.ToLower() == "date")
             {
                 FieldType = (int)Type.DateTime;
                 return;
@@ -72,7 +73,7 @@ namespace ORMCreator
         }
         void SetName(string strInput)
         {
-            FieldName = strInput.ToUpper();
+            FieldName = strInput.ToLower();
         }
         public void Load(string strInput)
         {
@@ -84,6 +85,30 @@ namespace ORMCreator
            
 
         }
+
+        public string PrintCopyConstructorCode()
+        {
+            return "             this." + FieldName + " = o." + FieldName + ";"; 
+        }
+
+        public string PrintEqualsCode()
+        {
+            if (FieldType == (int)Type.DateTime)
+            {
+                return "             if(this." + FieldName + ".ToString() != o." + FieldName + ".ToString())return false;"; 
+            }
+            return "             if(this." + FieldName + " != o." + FieldName + ")return false;"; 
+
+        }
+
+        public string PrintLoadCode()
+        {
+            return
+"            try { d."+FieldName+" = row."+FieldName.ToUpper()+"; }\r\n" +
+"            catch (Exception) { }\r\n\r\n";
+            
+        }
+
         public string PrintMemberCode()
         {
 
@@ -133,6 +158,7 @@ namespace ORMCreator
     {
         public List<DBField> dbFields { get; set; }
         public string Name { get; set; }
+        public string TableAdapter { get; set; }
 
         public DBTable()
         {
@@ -156,6 +182,8 @@ namespace ORMCreator
                 string line;
                 line = file.ReadLine();
                 SetName(line);
+                line = file.ReadLine();
+                TableAdapter = line;
                 while ((line = file.ReadLine()) != null)
                 {
                     DBField dbField = new DBField();
@@ -176,9 +204,86 @@ namespace ORMCreator
            
 
         }
+        void PrintCopyContructor(TextWriter tw)
+        {
+            tw.WriteLine(Attributes.ClassConstructors.Replace("%ClassName%", String.Format("{0}", Name)));
+            tw.WriteLine(Attributes.CopyFunctionStart.Replace("%ClassName%", String.Format("{0}", Name)));
+
+            foreach (DBField field in dbFields)
+            {
+                tw.WriteLine(field.PrintCopyConstructorCode());
+            }
+            tw.WriteLine(Attributes.CloseFunction);
+
+        }
+
+        void PrintEquals(TextWriter tw)
+        {
+            tw.WriteLine(Attributes.EqualsFunctionStart.Replace("%ClassName%", String.Format("{0}", Name)));
+            
+            foreach (DBField field in dbFields)
+            {
+                tw.WriteLine(field.PrintEqualsCode());
+            }
+            tw.WriteLine(Attributes.ReturnTrue);
+            tw.WriteLine(Attributes.CloseFunction);
+
+        }
+
+        void PrintPublicFunctions(TextWriter tw)
+        {
+            tw.WriteLine(Attributes.PublicStaticFunctions.Replace("%ClassName%", String.Format("{0}", Name)).Replace("%TableAdapter%", String.Format("{0}", TableAdapter)));
+        }
+
+        void PrintLoadFunction(TextWriter tw)
+        {
+            tw.WriteLine(Attributes.LoadFunctionStart.Replace("%ClassName%", String.Format("{0}", Name)));
+            foreach (DBField field in dbFields)
+            {
+                tw.WriteLine(field.PrintLoadCode());
+            }
+            tw.WriteLine(Attributes.CloseFunction);
+
+        }
+
         public bool Save(string filename)
         {
-            return false;
+            // create a writer and open the file
+            TextWriter tw = new StreamWriter(filename);
+
+            // write a line of text to the file
+            tw.WriteLine(Attributes.Includes);
+            string startClass = Attributes.StartClass.Replace("%ClassName%",String.Format("{0}", Name));
+            tw.WriteLine(startClass);
+
+            foreach (DBField field in dbFields)
+            {
+                tw.WriteLine(Attributes.MemeberIndent + field.PrintMemberCode());
+            }
+            string serializationCode = Attributes.ClassXMLSerialization.Replace("%ClassName%", String.Format("{0}", Name));
+            tw.WriteLine(serializationCode);
+
+            PrintCopyContructor(tw);
+
+            PrintEquals(tw);
+
+            PrintPublicFunctions(tw);
+
+            PrintLoadFunction(tw);
+
+            
+
+           
+
+
+            
+            tw.WriteLine(Attributes.CloseNamespace);
+            tw.WriteLine(Attributes.CloseClass);
+            
+            // close the stream
+            tw.Close();
+            return true;
         }
+       
     }
 }

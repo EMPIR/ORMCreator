@@ -1,5 +1,0 @@
-C:\Users\Administrator\Build\PrimeForLife\ORMCreator\ORMCreator\bin\Debug\ORMCreator.dll
-C:\Users\Administrator\Build\PrimeForLife\ORMCreator\ORMCreator\bin\Debug\ORMCreator.pdb
-C:\Users\Administrator\Build\PrimeForLife\ORMCreator\ORMCreator\obj\Debug\ResolveAssemblyReference.cache
-C:\Users\Administrator\Build\PrimeForLife\ORMCreator\ORMCreator\obj\Debug\ORMCreator.dll
-C:\Users\Administrator\Build\PrimeForLife\ORMCreator\ORMCreator\obj\Debug\ORMCreator.pdb
