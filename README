@@ -1,0 +1,4 @@
+This is a code generator project to help make a c# class
+from a data file description of a database table.  The 
+auto generated classes assume a datatable adapeter has been
+created.
