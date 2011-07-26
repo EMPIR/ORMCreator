@@ -93,11 +93,11 @@ namespace ORMCreator
 "        {\r\n";
 
         public static string EqualsFunctionStart =
-"        public void Equals(%ClassName% o)\r\n" +
+"        public bool Equals(%ClassName% o)\r\n" +
 "        {\r\n";
 
         public static string LoadFunctionStart =
-"       static public void LoadOpportunity(SLXapi.App_Data.SLXapiDB.%ClassName%sRow row, %ClassName% d)\r\n" +
+"       static public void Load%ClassName%(SLXapi.App_Data.SLXapiDB.%ClassName%Row row, %ClassName% d)\r\n" +
 "        {\r\n";
 
 
@@ -105,7 +105,7 @@ namespace ORMCreator
 
 "        public static bool Exists(%ClassName% o)\r\n" +
 "        {\r\n" +
-"            return Exists(o.%ClassName%ID);\r\n" +
+"            return Exists(o.%classname%id);\r\n" +
 "        }\r\n" +
 "        public static bool Exists(string id)\r\n" +
 "        {\r\n" +
@@ -117,9 +117,7 @@ namespace ORMCreator
 "\r\n" +
 "        public static bool isValid(%ClassName% o)\r\n" +
 "        {\r\n" +
-"            if (o.%ClassName%ID == String.Empty)\r\n" +
-"                return false;\r\n" +
-"            if (o.Type == String.Empty)\r\n" +
+"            if (o.%classname%id == String.Empty)\r\n" +
 "                return false;\r\n" +
 "            return true;\r\n" +
 "        }\r\n" +
@@ -148,7 +146,7 @@ namespace ORMCreator
 "        {\r\n" +
 "            if (!%ClassName%.Exists(this))\r\n" +
 "                return false;\r\n" +
-"            %ClassName% ret = %ClassName%.GetByID(%ClassName%ID);\r\n" +
+"            %ClassName% ret = %ClassName%.GetByID(%classname%id);\r\n" +
 "            Copy(ret);\r\n" +
 "            return true;\r\n" +
 "        }\r\n" +
@@ -181,7 +179,6 @@ namespace ORMCreator
 "\r\n" +
 "        static bool Update(%ClassName% j)\r\n" +
 "        {\r\n" +
-"            j.ModifyDate = DateTime.Now;\r\n" +
 "            throw new NotImplementedException();\r\n" +
 "        }\r\n" +
 "\r\n" +

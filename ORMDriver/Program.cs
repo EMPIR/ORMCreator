@@ -11,31 +11,18 @@ namespace ORMDriver
     {
         static void Main(string[] args)
         {
-            /*int counter = 0;
-            string line;
-            string strCWD = Directory.GetCurrentDirectory();
-            // Read the file and display it line by line.
-            System.IO.StreamReader file =
-               new System.IO.StreamReader("ContactData.txt");
-            while ((line = file.ReadLine()) != null)
+            if (args.Length != 2)
             {
-                Console.WriteLine(line);
-                counter++;
+                Console.WriteLine("Usage: <inputfile> <outputfile>");
             }
-
-            file.Close();
-             
-
-
-
-            // Suspend the screen.
-            Console.ReadLine();
-             * */
-
             DBTable dbTable = new DBTable();
-            dbTable.LoadFile("ContactData.txt");
-            dbTable.Save("SavedData.cs");
+            dbTable.LoadFile(args[0]);
+            dbTable.Save(args[1]);
 
+            /*
+             * dbTable.LoadFile("ContactData.txt");
+            dbTable.Save("SavedData.cs");
+             * */
         }
     }
 }

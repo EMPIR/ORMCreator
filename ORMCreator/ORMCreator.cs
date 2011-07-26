@@ -206,8 +206,15 @@ namespace ORMCreator
         }
         void PrintCopyContructor(TextWriter tw)
         {
-            tw.WriteLine(Attributes.ClassConstructors.Replace("%ClassName%", String.Format("{0}", Name)));
-            tw.WriteLine(Attributes.CopyFunctionStart.Replace("%ClassName%", String.Format("{0}", Name)));
+            string str = Attributes.ClassConstructors.Replace("%ClassName%", String.Format("{0}", Name));
+            str = str.Replace("%classname%", String.Format("{0}", Name.ToLower())); 
+
+            tw.WriteLine(str);
+
+            str = Attributes.CopyFunctionStart.Replace("%ClassName%", String.Format("{0}", Name));
+            str = str.Replace("%classname%", String.Format("{0}", Name.ToLower())); 
+
+            tw.WriteLine(str);
 
             foreach (DBField field in dbFields)
             {
@@ -219,7 +226,9 @@ namespace ORMCreator
 
         void PrintEquals(TextWriter tw)
         {
-            tw.WriteLine(Attributes.EqualsFunctionStart.Replace("%ClassName%", String.Format("{0}", Name)));
+            string str = Attributes.EqualsFunctionStart.Replace("%ClassName%", String.Format("{0}", Name));
+            str = str.Replace("%classname%", String.Format("{0}", Name.ToLower())); 
+            tw.WriteLine(str);
             
             foreach (DBField field in dbFields)
             {
@@ -232,12 +241,16 @@ namespace ORMCreator
 
         void PrintPublicFunctions(TextWriter tw)
         {
-            tw.WriteLine(Attributes.PublicStaticFunctions.Replace("%ClassName%", String.Format("{0}", Name)).Replace("%TableAdapter%", String.Format("{0}", TableAdapter)));
+            string str = Attributes.PublicStaticFunctions.Replace("%ClassName%", String.Format("{0}", Name)).Replace("%TableAdapter%", String.Format("{0}", TableAdapter));
+            str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
+            tw.WriteLine(str);
         }
 
         void PrintLoadFunction(TextWriter tw)
         {
-            tw.WriteLine(Attributes.LoadFunctionStart.Replace("%ClassName%", String.Format("{0}", Name)));
+            string str = Attributes.LoadFunctionStart.Replace("%ClassName%", String.Format("{0}", Name));
+            str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
+            tw.WriteLine(str);
             foreach (DBField field in dbFields)
             {
                 tw.WriteLine(field.PrintLoadCode());
@@ -254,6 +267,7 @@ namespace ORMCreator
             // write a line of text to the file
             tw.WriteLine(Attributes.Includes);
             string startClass = Attributes.StartClass.Replace("%ClassName%",String.Format("{0}", Name));
+            startClass = startClass.Replace("%classname%", String.Format("{0}", Name.ToLower()));
             tw.WriteLine(startClass);
 
             foreach (DBField field in dbFields)
@@ -261,6 +275,7 @@ namespace ORMCreator
                 tw.WriteLine(Attributes.MemeberIndent + field.PrintMemberCode());
             }
             string serializationCode = Attributes.ClassXMLSerialization.Replace("%ClassName%", String.Format("{0}", Name));
+            serializationCode = serializationCode.Replace("%classname%", String.Format("{0}", Name.ToLower()));
             tw.WriteLine(serializationCode);
 
             PrintCopyContructor(tw);

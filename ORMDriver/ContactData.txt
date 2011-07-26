@@ -5,7 +5,7 @@ ContactTableAdapter
       ,C.[ACCOUNTID] s
       ,C.[ACCOUNT] s
       ,C.[DEPARTMENT] s
-      ,C.[ISPRIMARY] bool
+      ,C.[ISPRIMARY] s
       ,C.[LASTNAME] s
       ,C.[FIRSTNAME] s
       ,C.[MIDDLENAME] s
@@ -31,27 +31,13 @@ ContactTableAdapter
       ,C.[LASTNAME_UC] s
       ,C.[WEBPASSWORD] s
       ,C.[WEBUSERNAME] s
-      ,C.[DONOTSOLICIT] bool
-      ,C.[DONOTEMAIL] bool
-      ,C.[DONOTPHONE] bool
-      ,C.[DONOTMAIL] bool
+      ,C.[DONOTSOLICIT] s
+      ,C.[DONOTEMAIL] s
+      ,C.[DONOTPHONE] s
+      ,C.[DONOTMAIL] s
       ,C.[DONOTFAX] bool
       ,C.[SALUTATION] s
       ,C.[WEBACCESSPW] s
-      ,C.[PRI_TRAINER] bool
-      ,C.[ALLOWWEBACCESS] bool
-	  ,A.[ENTITYID] s
-    
-      ,A.[ADDRESS1] s
-      ,A.[ADDRESS2] s
-      ,A.[CITY] s
-      ,A.[STATE] s
-      ,A.[POSTALCODE] s
-      ,A.[COUNTY] s
-      ,A.[COUNTRY] s
-      ,A.[ISMAILING] bool
-      ,A.[ROUTING] s
-      ,A.[ADDRESS3] s
-      ,A.[ADDRESS4] s
-      ,A.[TIMEZONE] s
+      ,C.[PRI_TRAINER] s
+      ,C.[ALLOWWEBACCESS] s
       
