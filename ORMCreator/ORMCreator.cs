@@ -91,6 +91,20 @@ namespace ORMCreator
             return "             this." + FieldName + " = o." + FieldName + ";"; 
         }
 
+        public string PrintConstructorCode()
+        {
+            return "             this." + FieldName + " = " + GetFieldDefault() + ";";
+        }
+
+
+        public string PrintUpdateSqlCode(bool isFirst)
+        {
+            if(isFirst)
+                return "             " + FieldName + " = @" + FieldName;
+            return "             ," + FieldName + " = @" + FieldName;
+        }
+
+
         public string PrintEqualsCode()
         {
             if (FieldType == (int)Type.DateTime)
@@ -107,6 +121,43 @@ namespace ORMCreator
 "            try { d."+FieldName+" = row."+FieldName.ToUpper()+"; }\r\n" +
 "            catch (Exception) { }\r\n\r\n";
             
+        }
+
+        public string GetFieldDefault()
+        {
+            switch ((Type)FieldType)
+            {
+                case Type.Integer:
+                case Type.Double:
+                case Type.Float:
+                    {
+                        return "0";
+
+                    }
+               
+                    
+                case Type.Boolean:
+                    {
+                        return "false";
+
+                    }
+                case Type.String:
+                    {
+                        return "String.Empty";
+
+                    }
+                case Type.DateTime:
+                    {
+                        return "Convert.ToDateTime(@\"1/1/1753\")";
+
+                    }
+                default:
+                    {
+
+                        break;
+                    }
+            }
+            return "String.Empty";
         }
 
         public string PrintMemberCode()
@@ -204,15 +255,55 @@ namespace ORMCreator
            
 
         }
+
+        void PrintUpdateFunction(TextWriter tw)
+        {
+            string str = Attributes.UpdateByIDStart.Replace("%ClassName%", String.Format("{0}", Name)).Replace("%TableAdapter%", String.Format("{0}", TableAdapter));
+            str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
+            str = str.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
+            tw.WriteLine(str);
+
+            for (int i = 1; i < dbFields.Count; ++i)
+            {
+                tw.WriteLine("          o."+dbFields[i].FieldName+",");
+            }
+            tw.WriteLine("          o." + dbFields[0].FieldName + "\r\n");
+            
+
+            str = Attributes.UpdateByIDEnd.Replace("%ClassName%", String.Format("{0}", Name)).Replace("%TableAdapter%", String.Format("{0}", TableAdapter));
+            str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
+            str = str.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
+            tw.WriteLine(str);
+        }
+
         void PrintCopyContructor(TextWriter tw)
         {
-            string str = Attributes.ClassConstructors.Replace("%ClassName%", String.Format("{0}", Name));
-            str = str.Replace("%classname%", String.Format("{0}", Name.ToLower())); 
+            string str = Attributes.ClassConstructorStart.Replace("%ClassName%", String.Format("{0}", Name));
+            str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
+            str = str.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
+            tw.WriteLine(str);
+
+            foreach (DBField field in dbFields)
+            {
+                tw.WriteLine(field.PrintConstructorCode());
+            }
+
+            str = Attributes.ClassConstructorEnd.Replace("%ClassName%", String.Format("{0}", Name));
+            str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
+            str = str.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
 
             tw.WriteLine(str);
 
+
+            str = Attributes.ClassCopyConstructor.Replace("%ClassName%", String.Format("{0}", Name));
+            str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
+            str = str.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
+            tw.WriteLine(str);
+
+
             str = Attributes.CopyFunctionStart.Replace("%ClassName%", String.Format("{0}", Name));
-            str = str.Replace("%classname%", String.Format("{0}", Name.ToLower())); 
+            str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
+            str = str.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
 
             tw.WriteLine(str);
 
@@ -224,10 +315,34 @@ namespace ORMCreator
 
         }
 
+        void PrintUpdateSLQ(TextWriter tw)
+        {
+            string str = Attributes.UpdateSqlStart.Replace("%ClassName%", String.Format("{0}", Name));
+            str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
+            str = str.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
+            tw.WriteLine(str);
+
+            bool isFirst = true;
+            //start at 1 to skip primary key in the set values
+            for (int i = 1; i < dbFields.Count; ++i)
+            {
+                tw.WriteLine(dbFields[i].PrintUpdateSqlCode(isFirst));
+                isFirst = false;
+            }
+            
+
+            str = Attributes.UpdateSqlEnd.Replace("%ClassName%", String.Format("{0}", Name));
+            str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
+            str = str.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
+            tw.WriteLine(str);
+
+        }
+
         void PrintEquals(TextWriter tw)
         {
             string str = Attributes.EqualsFunctionStart.Replace("%ClassName%", String.Format("{0}", Name));
-            str = str.Replace("%classname%", String.Format("{0}", Name.ToLower())); 
+            str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
+            str = str.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
             tw.WriteLine(str);
             
             foreach (DBField field in dbFields)
@@ -243,6 +358,8 @@ namespace ORMCreator
         {
             string str = Attributes.PublicStaticFunctions.Replace("%ClassName%", String.Format("{0}", Name)).Replace("%TableAdapter%", String.Format("{0}", TableAdapter));
             str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
+            str = str.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
+
             tw.WriteLine(str);
         }
 
@@ -250,6 +367,8 @@ namespace ORMCreator
         {
             string str = Attributes.LoadFunctionStart.Replace("%ClassName%", String.Format("{0}", Name));
             str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
+            str = str.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
+
             tw.WriteLine(str);
             foreach (DBField field in dbFields)
             {
@@ -268,6 +387,7 @@ namespace ORMCreator
             tw.WriteLine(Attributes.Includes);
             string startClass = Attributes.StartClass.Replace("%ClassName%",String.Format("{0}", Name));
             startClass = startClass.Replace("%classname%", String.Format("{0}", Name.ToLower()));
+            startClass = startClass.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
             tw.WriteLine(startClass);
 
             foreach (DBField field in dbFields)
@@ -276,24 +396,23 @@ namespace ORMCreator
             }
             string serializationCode = Attributes.ClassXMLSerialization.Replace("%ClassName%", String.Format("{0}", Name));
             serializationCode = serializationCode.Replace("%classname%", String.Format("{0}", Name.ToLower()));
+            serializationCode = serializationCode.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
             tw.WriteLine(serializationCode);
 
             PrintCopyContructor(tw);
 
             PrintEquals(tw);
 
+            PrintUpdateFunction(tw);
+
             PrintPublicFunctions(tw);
 
             PrintLoadFunction(tw);
 
-            
-
-           
-
-
-            
             tw.WriteLine(Attributes.CloseNamespace);
             tw.WriteLine(Attributes.CloseClass);
+
+            PrintUpdateSLQ(tw);
             
             // close the stream
             tw.Close();

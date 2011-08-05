@@ -77,12 +77,16 @@ namespace ORMCreator
 "            return xs.Deserialize(memoryStream);\r\n" +
 "        }\r\n";
 
-        public static string ClassConstructors =
+        public static string ClassConstructorStart =
 "\r\n\r\n\r\n" +
 "        public %ClassName%()\r\n" +
-"        {\r\n" +
+"        {\r\n";
+
+        public static string ClassConstructorEnd =     
 "        }\r\n" +
-"\r\n" +
+"\r\n";
+        public static string ClassCopyConstructor =       
+"\r\n\r\n\r\n" +
 "        public %ClassName%(%ClassName% o)\r\n" +
 "        {\r\n" +
 "            Copy(o);\r\n" +
@@ -100,12 +104,28 @@ namespace ORMCreator
 "       static public void Load%ClassName%(SLXapi.App_Data.SLXapiDB.%ClassName%Row row, %ClassName% d)\r\n" +
 "        {\r\n";
 
+        public static string UpdateSqlStart =
+"       /*UPDATE %ClassName% Set \r\n";
+        public static string UpdateSqlEnd =
+"       WHERE %primarykey% = @%primarykey% */\r\n";
+
+        public static string UpdateByIDStart =
+"        public static bool UpdateByID(%ClassName% o)\r\n" +
+"        {\r\n" +
+"            SLXapi.App_Data.SLXapiDBTableAdapters.%TableAdapter% ta = new SLXapi.App_Data.SLXapiDBTableAdapters.%TableAdapter%();\r\n" +
+"            int ret  = ta.UpdateByID(";
+
+        public static string UpdateByIDEnd =
+"           );\r\n" +
+"           if(ret == 1) return true;\r\n" +
+"           return false;\r\n" +
+"       }\r\n"; 
 
         public static string PublicStaticFunctions =
 
 "        public static bool Exists(%ClassName% o)\r\n" +
 "        {\r\n" +
-"            return Exists(o.%classname%id);\r\n" +
+"            return Exists(o.%primarykey%);\r\n" +
 "        }\r\n" +
 "        public static bool Exists(string id)\r\n" +
 "        {\r\n" +
@@ -117,7 +137,7 @@ namespace ORMCreator
 "\r\n" +
 "        public static bool isValid(%ClassName% o)\r\n" +
 "        {\r\n" +
-"            if (o.%classname%id == String.Empty)\r\n" +
+"            if (o.%primarykey% == String.Empty)\r\n" +
 "                return false;\r\n" +
 "            return true;\r\n" +
 "        }\r\n" +
@@ -146,7 +166,7 @@ namespace ORMCreator
 "        {\r\n" +
 "            if (!%ClassName%.Exists(this))\r\n" +
 "                return false;\r\n" +
-"            %ClassName% ret = %ClassName%.GetByID(%classname%id);\r\n" +
+"            %ClassName% ret = %ClassName%.GetByID(%primarykey%);\r\n" +
 "            Copy(ret);\r\n" +
 "            return true;\r\n" +
 "        }\r\n" +
@@ -179,7 +199,7 @@ namespace ORMCreator
 "\r\n" +
 "        static bool Update(%ClassName% j)\r\n" +
 "        {\r\n" +
-"            throw new NotImplementedException();\r\n" +
+"            return UpdateByID(j);\r\n" + 
 "        }\r\n" +
 "\r\n" +
 "        static List<%ClassName%> LoadFromModel(SLXapi.App_Data.SLXapiDB.%ClassName%DataTable table)\r\n" +
