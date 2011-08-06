@@ -109,9 +109,70 @@ namespace ORMCreator
         public static string UpdateSqlEnd =
 "       WHERE %primarykey% = @%primarykey% */\r\n";
 
+        public static string InsertSqlStart =
+"       /*INSERT INTO %ClassName%(%primarykey%\r\n"; 
+        public static string InsertSqlMiddle = 
+"       )\r\n"+
+"       VALUES\r\n"+
+"       (@%primarykey%\r\n";
+        public static string InsertSqlEnd = 
+"       );SELECT SCOPE_IDENTITY()*/\r\n";
+
+        /*
+         INSERT INTO [SLXPRI].[sysdba].[ADDRESS]
+           ([ADDRESSID]
+           ,[ENTITYID]
+           ,[TYPE]
+           ,[DESCRIPTION]
+           ,[ADDRESS1]
+           ,[ADDRESS2]
+           ,[CITY]
+           ,[STATE]
+           ,[POSTALCODE]
+           ,[COUNTY]
+           ,[COUNTRY]
+           ,[ISPRIMARY]
+           ,[ISMAILING]
+           ,[SALUTATION]
+           ,[CREATEDATE]
+           ,[CREATEUSER]
+           ,[MODIFYDATE]
+           ,[MODIFYUSER]
+           ,[ROUTING]
+           ,[ADDRESS3]
+           ,[ADDRESS4]
+           ,[TIMEZONE])
+     VALUES
+           (<ADDRESSID, STANDARDID,>
+           ,<ENTITYID, STANDARDID,>
+           ,<TYPE, varchar(64),>
+           ,<DESCRIPTION, varchar(64),>
+           ,<ADDRESS1, varchar(64),>
+           ,<ADDRESS2, varchar(64),>
+           ,<CITY, varchar(32),>
+           ,<STATE, varchar(32),>
+           ,<POSTALCODE, varchar(24),>
+           ,<COUNTY, varchar(32),>
+           ,<COUNTRY, varchar(32),>
+           ,<ISPRIMARY, BOOLEAN,>
+           ,<ISMAILING, BOOLEAN,>
+           ,<SALUTATION, varchar(64),>
+           ,<CREATEDATE, datetime,>
+           ,<CREATEUSER, STANDARDID,>
+           ,<MODIFYDATE, datetime,>
+           ,<MODIFYUSER, STANDARDID,>
+           ,<ROUTING, varchar(64),>
+           ,<ADDRESS3, varchar(64),>
+           ,<ADDRESS4, varchar(64),>
+           ,<TIMEZONE, varchar(64),>)
+         */
+       
+
+
         public static string UpdateByIDStart =
 "        public static bool UpdateByID(%ClassName% o)\r\n" +
 "        {\r\n" +
+"            o.modifydate = DateTime.Now;\r\n" +
 "            SLXapi.App_Data.SLXapiDBTableAdapters.%TableAdapter% ta = new SLXapi.App_Data.SLXapiDBTableAdapters.%TableAdapter%();\r\n" +
 "            int ret  = ta.UpdateByID(";
 
@@ -120,6 +181,19 @@ namespace ORMCreator
 "           if(ret == 1) return true;\r\n" +
 "           return false;\r\n" +
 "       }\r\n"; 
+
+        public static string InsertStart =
+"        public static bool Insert(%ClassName% o)\r\n" +
+"        {\r\n" +
+"            o.createdate = o.modifydate = DateTime.Now;\r\n" +
+"            SLXapi.App_Data.SLXapiDBTableAdapters.%TableAdapter% ta = new SLXapi.App_Data.SLXapiDBTableAdapters.%TableAdapter%();\r\n" +
+"            ta.InsertQuery(";
+
+        public static string InsertEnd =
+"           );\r\n" +
+"           return true;\r\n" +
+"       }\r\n"; 
+
 
         public static string PublicStaticFunctions =
 
@@ -167,6 +241,8 @@ namespace ORMCreator
 "            if (!%ClassName%.Exists(this))\r\n" +
 "                return false;\r\n" +
 "            %ClassName% ret = %ClassName%.GetByID(%primarykey%);\r\n" +
+"            if(ret == null)\r\n"+
+"               return false;\r\n"+
 "            Copy(ret);\r\n" +
 "            return true;\r\n" +
 "        }\r\n" +
@@ -180,19 +256,19 @@ namespace ORMCreator
 "\r\n" +
 "        public static %ClassName% GetByID(string id)\r\n" +
 "        {\r\n" +
-"            SLXapi.App_Data.SLXapiDBTableAdapters.%TableAdapter% ta = new SLXapi.App_Data.SLXapiDBTableAdapters.%TableAdapter%();\r\n" +
-"            SLXapi.App_Data.SLXapiDB.%ClassName%DataTable table = ta.GetDataByID(id);\r\n" +
-"            SLXapi.App_Data.SLXapiDB.%ClassName%Row row = (SLXapi.App_Data.SLXapiDB.%ClassName%Row)table.Rows[0];\r\n" +
+"            try{\r\n"+   
+"               SLXapi.App_Data.SLXapiDBTableAdapters.%TableAdapter% ta = new SLXapi.App_Data.SLXapiDBTableAdapters.%TableAdapter%();\r\n" +
+"               SLXapi.App_Data.SLXapiDB.%ClassName%DataTable table = ta.GetDataByID(id);\r\n" +
+"               SLXapi.App_Data.SLXapiDB.%ClassName%Row row = (SLXapi.App_Data.SLXapiDB.%ClassName%Row)table.Rows[0];\r\n" +
 "\r\n" +
-"            return %ClassName%.LoadFromModel(row);\r\n" +
+"               return %ClassName%.LoadFromModel(row);\r\n" +
+"           }\r\n"+
+"           catch(Exception){\r\n"+
+"               return null;\r\n"+
+"           }\r\n"+
 "        }\r\n" +
 "\r\n" +
 "        static bool Delete(%ClassName% p)\r\n" +
-"        {\r\n" +
-"            throw new NotImplementedException();\r\n" +
-"        }\r\n" +
-"\r\n" +
-"        static bool Insert(%ClassName% j)\r\n" +
 "        {\r\n" +
 "            throw new NotImplementedException();\r\n" +
 "        }\r\n" +

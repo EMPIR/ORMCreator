@@ -104,6 +104,17 @@ namespace ORMCreator
             return "             ," + FieldName + " = @" + FieldName;
         }
 
+        public string PrintInsertSqlFieldCode()
+        {
+            
+            return "             ," + FieldName;
+        }
+
+        public string PrintInsertSqlValueCode()
+        {
+            
+            return "             ,@" + FieldName;
+        }
 
         public string PrintEqualsCode()
         {
@@ -276,6 +287,26 @@ namespace ORMCreator
             tw.WriteLine(str);
         }
 
+        void PrintInsertFunction(TextWriter tw)
+        {
+            string str = Attributes.InsertStart.Replace("%ClassName%", String.Format("{0}", Name)).Replace("%TableAdapter%", String.Format("{0}", TableAdapter));
+            str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
+            str = str.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
+            tw.WriteLine(str);
+
+            for (int i = 0; i < dbFields.Count -1; ++i)
+            {
+                tw.WriteLine("          o." + dbFields[i].FieldName + ",");
+            }
+            tw.WriteLine("          o." + dbFields[dbFields.Count - 1].FieldName + "\r\n");
+
+
+            str = Attributes.InsertEnd.Replace("%ClassName%", String.Format("{0}", Name)).Replace("%TableAdapter%", String.Format("{0}", TableAdapter));
+            str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
+            str = str.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
+            tw.WriteLine(str);
+        }
+
         void PrintCopyContructor(TextWriter tw)
         {
             string str = Attributes.ClassConstructorStart.Replace("%ClassName%", String.Format("{0}", Name));
@@ -315,7 +346,7 @@ namespace ORMCreator
 
         }
 
-        void PrintUpdateSLQ(TextWriter tw)
+        void PrintUpdateSQL(TextWriter tw)
         {
             string str = Attributes.UpdateSqlStart.Replace("%ClassName%", String.Format("{0}", Name));
             str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
@@ -335,6 +366,40 @@ namespace ORMCreator
             str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
             str = str.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
             tw.WriteLine(str);
+
+        }
+
+        void PrintInsertSQL(TextWriter tw)
+        {
+            string str = Attributes.InsertSqlStart.Replace("%ClassName%", String.Format("{0}", Name));
+            str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
+            str = str.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
+            tw.WriteLine(str);
+
+            
+            //start at 1 to skip primary key in the set values
+            for (int i = 1; i < dbFields.Count; ++i)
+            {
+                tw.WriteLine(dbFields[i].PrintInsertSqlFieldCode());
+            }
+
+
+            str = Attributes.InsertSqlMiddle.Replace("%ClassName%", String.Format("{0}", Name));
+            str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
+            str = str.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
+            tw.WriteLine(str);
+            //start at 1 to skip primary key in the set values
+            for (int i = 1; i < dbFields.Count; ++i)
+            {
+                tw.WriteLine(dbFields[i].PrintInsertSqlValueCode());
+            }
+
+            str = Attributes.InsertSqlEnd.Replace("%ClassName%", String.Format("{0}", Name));
+            str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
+            str = str.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
+            tw.WriteLine(str);
+            
+
 
         }
 
@@ -405,6 +470,8 @@ namespace ORMCreator
 
             PrintUpdateFunction(tw);
 
+            PrintInsertFunction(tw);
+
             PrintPublicFunctions(tw);
 
             PrintLoadFunction(tw);
@@ -412,7 +479,8 @@ namespace ORMCreator
             tw.WriteLine(Attributes.CloseNamespace);
             tw.WriteLine(Attributes.CloseClass);
 
-            PrintUpdateSLQ(tw);
+            PrintUpdateSQL(tw);
+            PrintInsertSQL(tw);
             
             // close the stream
             tw.Close();
