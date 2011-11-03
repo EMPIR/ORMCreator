@@ -1,0 +1,17 @@
+PriContactInfo
+PriContactInfoTableAdatper
+SELECT [CONTACTID] s
+      ,[CREATEUSER] s
+      ,[CREATEDATE] date
+      ,[MODIFYUSER] s 
+      ,[MODIFYDATE] date
+      ,[INITCERTDATE] date
+      ,[AGREEMENTDATE] date
+      ,[FINALEXAM] s
+      ,[MATSHIPDATE] date
+      ,[INSTRUCTORNUM] s
+      ,[DECERTIFIED] s
+      ,[LASTRECERTDATE] date
+      ,[STATECERT] s
+      ,[RECERT] s
+      ,[INITIALTRAINDATE] date

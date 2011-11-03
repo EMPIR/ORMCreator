@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Text.RegularExpressions;
 
 
 namespace ORMCreator
 {
     public class DBField
     {
-        enum Type
+        public enum Type
         {
             Integer,
             Double,
@@ -27,6 +28,7 @@ namespace ORMCreator
 
         string ParseFieldType(string strInput)
         {
+            strInput = strInput.Trim();
             char[] delimiterChars = { ' ', ',', '.', ':', '\t' };
 
             string ret;
@@ -48,6 +50,7 @@ namespace ORMCreator
         }
         void SetType(string strInput)
         {
+            strInput = strInput.Trim();
             if (strInput.ToLower() == "string" || strInput.ToLower() == "standardid" || strInput.ToLower() == "varchar" || strInput.ToLower() == "char")
             {
                 FieldType = (int)Type.String;
@@ -221,6 +224,7 @@ namespace ORMCreator
         public List<DBField> dbFields { get; set; }
         public string Name { get; set; }
         public string TableAdapter { get; set; }
+        public string NameSpace { get; set; }
 
         public DBTable()
         {
@@ -231,6 +235,19 @@ namespace ORMCreator
         {
             Name = strInput;
         }
+
+        string GetNameSpace(string strInput)
+        {
+            Match match = Regex.Match(strInput, @"namespace=(.*)", RegexOptions.IgnoreCase);
+            if (match.Success)
+            {
+                return match.Groups[1].Value;
+                        
+                
+            }
+            return String.Empty;
+        }
+
         public bool LoadFile(string filename)
         {
             try
@@ -242,7 +259,19 @@ namespace ORMCreator
                 dbFields = new List<DBField>();
                 int counter = 0;
                 string line;
+
+
                 line = file.ReadLine();
+
+                NameSpace = GetNameSpace(line);
+                if (NameSpace != String.Empty)
+                {
+                    
+                    line = file.ReadLine();
+                }
+                else
+                    NameSpace = "SLXapi";
+               
                 SetName(line);
                 line = file.ReadLine();
                 TableAdapter = line;
@@ -269,14 +298,18 @@ namespace ORMCreator
 
         void PrintUpdateFunction(TextWriter tw)
         {
-            string str = Attributes.UpdateByIDStart.Replace("%ClassName%", String.Format("{0}", Name)).Replace("%TableAdapter%", String.Format("{0}", TableAdapter));
+            string str = Attributes.UpdateByIDStart(NameSpace).Replace("%ClassName%", String.Format("{0}", Name)).Replace("%TableAdapter%", String.Format("{0}", TableAdapter));
             str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
             str = str.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
             tw.WriteLine(str);
 
             for (int i = 1; i < dbFields.Count; ++i)
             {
-                tw.WriteLine("          o."+dbFields[i].FieldName+",");
+                if(dbFields[i].FieldType == (int)DBField.Type.DateTime)
+                    //o.createdate == Convert.ToDateTime(@"1/1/1753") ? d : o.createdate,
+                    tw.WriteLine("          o." + dbFields[i].FieldName + " == Convert.ToDateTime(@\"1/1/1753\") ? d : o." + dbFields[i].FieldName +",");
+                else
+                    tw.WriteLine("          o."+dbFields[i].FieldName+",");
             }
             tw.WriteLine("          o." + dbFields[0].FieldName + "\r\n");
             
@@ -289,14 +322,19 @@ namespace ORMCreator
 
         void PrintInsertFunction(TextWriter tw)
         {
-            string str = Attributes.InsertStart.Replace("%ClassName%", String.Format("{0}", Name)).Replace("%TableAdapter%", String.Format("{0}", TableAdapter));
+            string str = Attributes.InsertStart(NameSpace).Replace("%ClassName%", String.Format("{0}", Name)).Replace("%TableAdapter%", String.Format("{0}", TableAdapter));
             str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
             str = str.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
             tw.WriteLine(str);
 
             for (int i = 0; i < dbFields.Count -1; ++i)
             {
-                tw.WriteLine("          o." + dbFields[i].FieldName + ",");
+                if (dbFields[i].FieldType == (int)DBField.Type.DateTime)
+                    //o.createdate == Convert.ToDateTime(@"1/1/1753") ? d : o.createdate,
+                    tw.WriteLine("          o." + dbFields[i].FieldName + " == Convert.ToDateTime(@\"1/1/1753\") ? d : o." + dbFields[i].FieldName + ",");
+                else
+                    tw.WriteLine("          o." + dbFields[i].FieldName + ",");
+                
             }
             tw.WriteLine("          o." + dbFields[dbFields.Count - 1].FieldName + "\r\n");
 
@@ -421,7 +459,7 @@ namespace ORMCreator
 
         void PrintPublicFunctions(TextWriter tw)
         {
-            string str = Attributes.PublicStaticFunctions.Replace("%ClassName%", String.Format("{0}", Name)).Replace("%TableAdapter%", String.Format("{0}", TableAdapter));
+            string str = Attributes.PublicStaticFunctions(NameSpace).Replace("%ClassName%", String.Format("{0}", Name)).Replace("%TableAdapter%", String.Format("{0}", TableAdapter));
             str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
             str = str.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
 
@@ -430,7 +468,7 @@ namespace ORMCreator
 
         void PrintLoadFunction(TextWriter tw)
         {
-            string str = Attributes.LoadFunctionStart.Replace("%ClassName%", String.Format("{0}", Name));
+            string str = Attributes.LoadFunctionStart(NameSpace).Replace("%ClassName%", String.Format("{0}", Name));
             str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
             str = str.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
 
@@ -447,10 +485,10 @@ namespace ORMCreator
         {
             // create a writer and open the file
             TextWriter tw = new StreamWriter(filename);
-
+           
             // write a line of text to the file
-            tw.WriteLine(Attributes.Includes);
-            string startClass = Attributes.StartClass.Replace("%ClassName%",String.Format("{0}", Name));
+            tw.WriteLine(Attributes.Includes(NameSpace));
+            string startClass = Attributes.StartClass(NameSpace).Replace("%ClassName%",String.Format("{0}", Name));
             startClass = startClass.Replace("%classname%", String.Format("{0}", Name.ToLower()));
             startClass = startClass.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
             tw.WriteLine(startClass);
@@ -459,7 +497,7 @@ namespace ORMCreator
             {
                 tw.WriteLine(Attributes.MemeberIndent + field.PrintMemberCode());
             }
-            string serializationCode = Attributes.ClassXMLSerialization.Replace("%ClassName%", String.Format("{0}", Name));
+            string serializationCode = Attributes.ClassXMLSerialization(NameSpace).Replace("%ClassName%", String.Format("{0}", Name));
             serializationCode = serializationCode.Replace("%classname%", String.Format("{0}", Name.ToLower()));
             serializationCode = serializationCode.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
             tw.WriteLine(serializationCode);

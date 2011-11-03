@@ -14,6 +14,7 @@ namespace ORMDriver
             if (args.Length != 2)
             {
                 Console.WriteLine("Usage: <inputfile> <outputfile>");
+                return;
             }
             DBTable dbTable = new DBTable();
             dbTable.LoadFile(args[0]);
@@ -23,6 +24,8 @@ namespace ORMDriver
              * dbTable.LoadFile("ContactData.txt");
             dbTable.Save("SavedData.cs");
              * */
+
+
         }
     }
 }
