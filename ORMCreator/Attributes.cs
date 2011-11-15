@@ -183,15 +183,21 @@ namespace ORMCreator
 
 
 
-        public static string UpdateByIDStart(string namespaceStr)
+        public static string UpdateByIDStart(string namespaceStr, bool containsModifyDate)
         {
-            return
-                "        public static bool UpdateByID(%ClassName% o)\r\n" +
-                "        {\r\n" +
-                "            DateTime? d = null;\r\n" +
-                "            o.modifydate = DateTime.Now;\r\n" +
-                "            " + namespaceStr + ".App_Data." + namespaceStr + "DBTableAdapters.%TableAdapter% ta = new " + namespaceStr + ".App_Data." + namespaceStr + "DBTableAdapters.%TableAdapter%();\r\n" +
-                "            int ret  = ta.UpdateByID(";
+            string ret = "        public static bool UpdateByID(%ClassName% o)\r\n" +
+                         "        {\r\n";
+
+            if (containsModifyDate)
+            {
+                ret += "            DateTime? d = null;\r\n" +
+                       "            o.modifydate = DateTime.Now;\r\n";
+            }
+
+           
+            ret +=      "            " + namespaceStr + ".App_Data." + namespaceStr + "DBTableAdapters.%TableAdapter% ta = new " + namespaceStr + ".App_Data." + namespaceStr + "DBTableAdapters.%TableAdapter%();\r\n" +
+                        "            int ret  = ta.UpdateByID(";
+            return ret;
         }
 
         public static string UpdateByIDEnd =
@@ -200,15 +206,21 @@ namespace ORMCreator
 "           return false;\r\n" +
 "       }\r\n";
 
-        public static string InsertStart(string namespaceStr)
+        public static string InsertStart(string namespaceStr, bool containsCreateDate)
         {
-            return
-                "        public static bool Insert(%ClassName% o)\r\n" +
-                "        {\r\n" +
-                "            DateTime? d = null;\r\n" +
-                "            o.createdate = o.modifydate = DateTime.Now;\r\n" +
-                "            " + namespaceStr + ".App_Data." + namespaceStr + "DBTableAdapters.%TableAdapter% ta = new " + namespaceStr + ".App_Data." + namespaceStr + "DBTableAdapters.%TableAdapter%();\r\n" +
-                "            ta.InsertQuery(";
+            string ret =    "        public static bool Insert(%ClassName% o)\r\n" +
+                            "        {\r\n";
+
+            if (containsCreateDate)
+            {
+                ret +=      "            DateTime? d = null;\r\n" +
+                            "            o.createdate = o.modifydate = DateTime.Now;\r\n";
+
+            }
+
+            ret +=          "            " + namespaceStr + ".App_Data." + namespaceStr + "DBTableAdapters.%TableAdapter% ta = new " + namespaceStr + ".App_Data." + namespaceStr + "DBTableAdapters.%TableAdapter%();\r\n" +
+                            "            ta.InsertQuery(";
+            return ret;
         }
 
         public static string InsertEnd =
@@ -216,8 +228,15 @@ namespace ORMCreator
 "           return true;\r\n" +
 "       }\r\n";
 
+        public static string PublicStaticFunctions(string namespaceStr, bool pkStr)
+        {
+            if (pkStr)
+                return PublicStaticFunctionsPKStr(namespaceStr);
+            return PublicStaticFunctionsPKInt(namespaceStr);
+        }
 
-        public static string PublicStaticFunctions(string namespaceStr)
+
+        public static string PublicStaticFunctionsPKStr(string namespaceStr)
         {
             return
 
@@ -279,6 +298,116 @@ namespace ORMCreator
                 "        }\r\n" +
                 "\r\n" +
                 "        public static %ClassName% GetByID(string id)\r\n" +
+                "        {\r\n" +
+                "            try{\r\n" +
+                "               " + namespaceStr + ".App_Data." + namespaceStr + "DBTableAdapters.%TableAdapter% ta = new " + namespaceStr + ".App_Data." + namespaceStr + "DBTableAdapters.%TableAdapter%();\r\n" +
+                "               " + namespaceStr + ".App_Data." + namespaceStr + "DB.%ClassName%DataTable table = ta.GetDataByID(id);\r\n" +
+                "               " + namespaceStr + ".App_Data." + namespaceStr + "DB.%ClassName%Row row = (" + namespaceStr + ".App_Data." + namespaceStr + "DB.%ClassName%Row)table.Rows[0];\r\n" +
+                "\r\n" +
+                "               return %ClassName%.LoadFromModel(row);\r\n" +
+                "           }\r\n" +
+                "           catch(Exception){\r\n" +
+                "               return null;\r\n" +
+                "           }\r\n" +
+                "        }\r\n" +
+                "\r\n" +
+                "        static bool Delete(%ClassName% p)\r\n" +
+                "        {\r\n" +
+                "            throw new NotImplementedException();\r\n" +
+                "        }\r\n" +
+                "\r\n" +
+                "        static bool Update(%ClassName% j)\r\n" +
+                "        {\r\n" +
+                "            return UpdateByID(j);\r\n" +
+                "        }\r\n" +
+                "\r\n" +
+                "        static List<%ClassName%> LoadFromModel(" + namespaceStr + ".App_Data." + namespaceStr + "DB.%ClassName%DataTable table)\r\n" +
+                "        {\r\n" +
+                "            List<%ClassName%> list = new List<%ClassName%>();\r\n" +
+                "            foreach (" + namespaceStr + ".App_Data." + namespaceStr + "DB.%ClassName%Row row in table.Rows)\r\n" +
+                "            {\r\n" +
+                "                %ClassName% d = %ClassName%.LoadFromModel(row);\r\n" +
+                "                list.Add(d);\r\n" +
+                "            }\r\n" +
+                "            return list;\r\n" +
+                "\r\n" +
+                "        }\r\n" +
+                "\r\n" +
+                "        static %ClassName% LoadFromModel(" + namespaceStr + ".App_Data." + namespaceStr + "DB.%ClassName%Row row)\r\n" +
+                "        {\r\n" +
+                "            %ClassName% d = new %ClassName%();\r\n" +
+                "            Load%ClassName%(row, d);\r\n" +
+                "            return d;\r\n" +
+                "        }";
+        }
+
+
+
+
+
+
+        public static string PublicStaticFunctionsPKInt(string namespaceStr)
+        {
+            return
+
+                "        public static bool Exists(%ClassName% o)\r\n" +
+                "        {\r\n" +
+                "            return Exists(o.%primarykey%);\r\n" +
+                "        }\r\n" +
+                "        public static bool Exists(int id)\r\n" +
+                "        {\r\n" +
+                "            " + namespaceStr + ".App_Data." + namespaceStr + "DBTableAdapters.%TableAdapter% ta = new " + namespaceStr + ".App_Data." + namespaceStr + "DBTableAdapters.%TableAdapter%();\r\n" +
+                "            if (ta.GetSumByID(id) == 0)\r\n" +
+                "                return false;\r\n" +
+                "            return true;\r\n" +
+                "        }\r\n" +
+                "\r\n" +
+                "        public static bool isValid(%ClassName% o)\r\n" +
+                "        {\r\n" +
+                "            if (o.%primarykey% == 0)\r\n" +
+                "                return false;\r\n" +
+                "            return true;\r\n" +
+                "        }\r\n" +
+                "\r\n" +
+                "        public static bool Remove(%ClassName% j)\r\n" +
+                "        {\r\n" +
+                "            if (Exists(j))\r\n" +
+                "            {\r\n" +
+                "                return Delete(j);\r\n" +
+                "            }\r\n" +
+                "            return false;\r\n" +
+                "        }\r\n" +
+                "\r\n" +
+                "        public static bool Save(%ClassName% j)\r\n" +
+                "        {\r\n" +
+                "            if (!%ClassName%.isValid(j))\r\n" +
+                "                return false;\r\n" +
+                "            if (Exists(j))\r\n" +
+                "            {\r\n" +
+                "                return %ClassName%.Update(j);\r\n" +
+                "            }\r\n" +
+                "            return %ClassName%.Insert(j);\r\n" +
+                "        }\r\n" +
+                "\r\n" +
+                "        public bool Refresh()\r\n" +
+                "        {\r\n" +
+                "            if (!%ClassName%.Exists(this))\r\n" +
+                "                return false;\r\n" +
+                "            %ClassName% ret = %ClassName%.GetByID(%primarykey%);\r\n" +
+                "            if(ret == null)\r\n" +
+                "               return false;\r\n" +
+                "            Copy(ret);\r\n" +
+                "            return true;\r\n" +
+                "        }\r\n" +
+                "\r\n" +
+                "        public static List<%ClassName%> GetAll()\r\n" +
+                "        {\r\n" +
+                "            " + namespaceStr + ".App_Data." + namespaceStr + "DBTableAdapters.%TableAdapter% ta = new " + namespaceStr + ".App_Data." + namespaceStr + "DBTableAdapters.%TableAdapter%();\r\n" +
+                "            " + namespaceStr + ".App_Data." + namespaceStr + "DB.%ClassName%DataTable table = ta.GetData();\r\n" +
+                "            return LoadFromModel(table);\r\n" +
+                "        }\r\n" +
+                "\r\n" +
+                "        public static %ClassName% GetByID(int id)\r\n" +
                 "        {\r\n" +
                 "            try{\r\n" +
                 "               " + namespaceStr + ".App_Data." + namespaceStr + "DBTableAdapters.%TableAdapter% ta = new " + namespaceStr + ".App_Data." + namespaceStr + "DBTableAdapters.%TableAdapter%();\r\n" +

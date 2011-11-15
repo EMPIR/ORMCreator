@@ -132,7 +132,7 @@ namespace ORMCreator
         public string PrintLoadCode()
         {
             return
-"            try { d."+FieldName+" = row."+FieldName.ToUpper()+"; }\r\n" +
+"            try { d."+FieldName+" = row."+FieldName+"; }\r\n" +
 "            catch (Exception) { }\r\n\r\n";
             
         }
@@ -236,6 +236,32 @@ namespace ORMCreator
             Name = strInput;
         }
 
+       
+
+        bool ContainsModifyDate()
+        {
+            foreach (DBField field in dbFields)
+            {
+                if(field.FieldName.ToLower() == "modifydate")
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        bool ContainsCreateDate()
+        {
+            foreach (DBField field in dbFields)
+            {
+                if (field.FieldName.ToLower() == "createdate")
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         string GetNameSpace(string strInput)
         {
             Match match = Regex.Match(strInput, @"namespace=(.*)", RegexOptions.IgnoreCase);
@@ -298,7 +324,8 @@ namespace ORMCreator
 
         void PrintUpdateFunction(TextWriter tw)
         {
-            string str = Attributes.UpdateByIDStart(NameSpace).Replace("%ClassName%", String.Format("{0}", Name)).Replace("%TableAdapter%", String.Format("{0}", TableAdapter));
+            
+            string str = Attributes.UpdateByIDStart(NameSpace, ContainsModifyDate()).Replace("%ClassName%", String.Format("{0}", Name)).Replace("%TableAdapter%", String.Format("{0}", TableAdapter));
             str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
             str = str.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
             tw.WriteLine(str);
@@ -322,7 +349,7 @@ namespace ORMCreator
 
         void PrintInsertFunction(TextWriter tw)
         {
-            string str = Attributes.InsertStart(NameSpace).Replace("%ClassName%", String.Format("{0}", Name)).Replace("%TableAdapter%", String.Format("{0}", TableAdapter));
+            string str = Attributes.InsertStart(NameSpace, ContainsCreateDate()).Replace("%ClassName%", String.Format("{0}", Name)).Replace("%TableAdapter%", String.Format("{0}", TableAdapter));
             str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
             str = str.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
             tw.WriteLine(str);
@@ -459,7 +486,11 @@ namespace ORMCreator
 
         void PrintPublicFunctions(TextWriter tw)
         {
-            string str = Attributes.PublicStaticFunctions(NameSpace).Replace("%ClassName%", String.Format("{0}", Name)).Replace("%TableAdapter%", String.Format("{0}", TableAdapter));
+            string str;
+            if (this.dbFields[0].FieldType != (int)DBField.Type.Integer)
+                str = Attributes.PublicStaticFunctions(NameSpace, true).Replace("%ClassName%", String.Format("{0}", Name)).Replace("%TableAdapter%", String.Format("{0}", TableAdapter));
+            else
+                str = Attributes.PublicStaticFunctions(NameSpace, false).Replace("%ClassName%", String.Format("{0}", Name)).Replace("%TableAdapter%", String.Format("{0}", TableAdapter));
             str = str.Replace("%classname%", String.Format("{0}", Name.ToLower()));
             str = str.Replace("%primarykey%", String.Format("{0}", dbFields[0].FieldName));
 
