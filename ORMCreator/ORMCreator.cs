@@ -17,7 +17,8 @@ namespace ORMCreator
             Float,
             Boolean,
             String,
-            DateTime
+            DateTime,
+            Decimal
         }
         public int FieldType { get; set; }
         public string FieldName { get; set; }
@@ -71,12 +72,28 @@ namespace ORMCreator
                 FieldType = (int)Type.Boolean;
                 return;
             }
+            if (strInput.ToLower() == "double" )
+            {
+                FieldType = (int)Type.Double;
+                return;
+            }
+            if (strInput.ToLower() == "float")
+            {
+                FieldType = (int)Type.Float;
+                return;
+            }
+            if (strInput.ToLower() == "decimal")
+            {
+                FieldType = (int)Type.Decimal;
+                return;
+            }
+
 
             FieldType = (int)Type.String;
         }
         void SetName(string strInput)
         {
-            FieldName = strInput.ToLower();
+            FieldName = strInput;
         }
         public void Load(string strInput)
         {
@@ -144,6 +161,7 @@ namespace ORMCreator
                 case Type.Integer:
                 case Type.Double:
                 case Type.Float:
+                case Type.Decimal:
                     {
                         return "0";
 
@@ -208,6 +226,11 @@ namespace ORMCreator
                 {
                     return "public DateTime " + FieldName + " { get; set; }";
                  
+                }
+                case Type.Decimal:
+                {
+                    return "public decimal " + FieldName + " { get; set; }";
+
                 }
                 default:
                 {
